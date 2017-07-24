@@ -21,13 +21,11 @@ import android.app.Dialog
 import android.content.pm.PackageManager
 import android.os.*
 import android.support.annotation.StringRes
-import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.DialogFragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -35,6 +33,7 @@ import android.view.View
 import android.widget.Toast
 import com.google.android.cameraview.AspectRatio
 import com.google.android.cameraview.CameraView
+import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -49,14 +48,12 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 
     private var mCurrentFlash: Int = 0
 
-    private var mCameraView: CameraView? = null
-
     private var mBackgroundHandler: Handler? = null
 
     private val mOnClickListener = View.OnClickListener { v ->
         when (v.id) {
-            R.id.take_picture -> if (mCameraView != null) {
-                mCameraView!!.takePicture()
+            R.id.fab_take_picture -> if (camera_view != null) {
+                camera_view!!.takePicture()
             }
         }
     }
@@ -64,22 +61,19 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        mCameraView = findViewById(R.id.camera) as CameraView
-        if (mCameraView != null) {
-            mCameraView!!.addCallback(mCallback)
+        if (camera_view != null) {
+            camera_view!!.addCallback(mCallback)
         }
-        val fab = findViewById(R.id.take_picture) as FloatingActionButton
-        fab?.setOnClickListener(mOnClickListener)
-        val toolbar = findViewById(R.id.toolbar) as Toolbar
+
+        fab_take_picture?.setOnClickListener(mOnClickListener)
         setSupportActionBar(toolbar)
-        val actionBar = supportActionBar
-        actionBar?.setDisplayShowTitleEnabled(false)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
     }
 
     override fun onResume() {
         super.onResume()
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            mCameraView!!.start()
+            camera_view!!.start()
         } else if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                 Manifest.permission.CAMERA)) {
             ConfirmationDialogFragment
@@ -95,7 +89,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     }
 
     override fun onPause() {
-        mCameraView!!.stop()
+        camera_view!!.stop()
         super.onPause()
     }
 
@@ -135,27 +129,27 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
         when (item.itemId) {
             R.id.aspect_ratio -> {
                 val fragmentManager = supportFragmentManager
-                if (mCameraView != null && fragmentManager.findFragmentByTag(FRAGMENT_DIALOG) == null) {
-                    val ratios = mCameraView!!.supportedAspectRatios
-                    val currentRatio = mCameraView!!.aspectRatio
+                if (camera_view != null && fragmentManager.findFragmentByTag(FRAGMENT_DIALOG) == null) {
+                    val ratios = camera_view!!.supportedAspectRatios
+                    val currentRatio = camera_view!!.aspectRatio
                     AspectRatioFragment.newInstance(ratios, currentRatio)
                             .show(fragmentManager, FRAGMENT_DIALOG)
                 }
                 return true
             }
             R.id.switch_flash -> {
-                if (mCameraView != null) {
+                if (camera_view != null) {
                     mCurrentFlash = (mCurrentFlash + 1) % FLASH_OPTIONS.size
                     item.setTitle(FLASH_TITLES[mCurrentFlash])
                     item.setIcon(FLASH_ICONS[mCurrentFlash])
-                    mCameraView!!.flash = FLASH_OPTIONS[mCurrentFlash]
+                    camera_view!!.flash = FLASH_OPTIONS[mCurrentFlash]
                 }
                 return true
             }
             R.id.switch_camera -> {
-                if (mCameraView != null) {
-                    val facing = mCameraView!!.facing
-                    mCameraView!!.facing = if (facing == CameraView.FACING_FRONT)
+                if (camera_view != null) {
+                    val facing = camera_view!!.facing
+                    camera_view!!.facing = if (facing == CameraView.FACING_FRONT)
                         CameraView.FACING_BACK
                     else
                         CameraView.FACING_FRONT
@@ -167,9 +161,9 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
     }
 
     override fun onAspectRatioSelected(ratio: AspectRatio) {
-        if (mCameraView != null) {
+        if (camera_view != null) {
             Toast.makeText(this, ratio.toString(), Toast.LENGTH_SHORT).show()
-            mCameraView!!.setAspectRatio(ratio)
+            camera_view!!.setAspectRatio(ratio)
         }
     }
 
